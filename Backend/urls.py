@@ -24,6 +24,6 @@ urlpatterns = [
     path('account/', include('accounts.urls')),
     path('account/', include('allauth.urls')),
     path('selfcheck/', include('selfcheck.urls')),
-    path('reservation/', views.ReservationListAPIView.as_view()),
-    path('reservation/<int:pk>/',views.ReservationEditAPIView.as_view())
+    path('reservation/', include('unlock2023.urls')),
+    path('reservation/', include('rest_framework.urls')),
 ]

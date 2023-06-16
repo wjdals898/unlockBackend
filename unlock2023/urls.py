@@ -1,8 +1,10 @@
 import rest_framework
-from django.urls import path, include, admin
+from django.urls import path, include
+from .views import *
+
 
 app_name = 'unlock2023'
 urlpatterns = [
-        path('admin/', admin.site.urls),
-    path('', include('rest_framework.urls'))
+    path('', ReservationListAPIView.as_view()),
+    path('<int:pk>/', ReservationEditAPIView.as_view())
 ]

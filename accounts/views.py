@@ -84,7 +84,7 @@ class KakaoLoginView(APIView):
                 data = {
                     'name': user.name,
                     'email': user.email,
-                    'gender': user.gender
+                    #'gender': user.gender
                 }
                 res = Response({'user': data, 'refresh': str(token), 'access': str(token.access_token), "msg": "로그인 성공"}, status=status.HTTP_200_OK)
                 res.set_cookie('access', str(token.access_token))
@@ -92,16 +92,19 @@ class KakaoLoginView(APIView):
                 return res
 
         except User.DoesNotExist:
+            '''
             if user_information['kakao_account']['gender'] == "male":
                 gender = "M"
-            else:
+            elif user_information['kakao_account']['gender'] == "female":
                 gender = "F"
-
+            else:
+                gender = None
+'''
             new_user = User.objects.create_user(
                 email=user_information['kakao_account'].get('email', None),
                 name=user_information['properties'].get('nickname'),
                 social_id=social_id,
-                gender=gender,
+                #gender=gender,
             )
             new_user.set_unusable_password()
             new_user.save()
@@ -127,9 +130,9 @@ class KakaoLogout(APIView):
 
     def get(self, request):
         admin_key = os.environ.get("KAKAO_ADMIN_KEY")
-        kakao_logout_api = "https://kapi.kakao.com/v1/user/logout"
+        kakao_logout_api = "https://kapi.kakao.com/v1/user/unlink"
 
-        refresh = request.data.get('refresh')
+        refresh = request.COOKIES.get('refresh')
         refresh_token = RefreshToken(refresh) # refresh token 정보 가져오기
 
         if not refresh_token:

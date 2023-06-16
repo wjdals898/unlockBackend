@@ -34,7 +34,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=30, null=True)
-    social_id = models.PositiveIntegerField(unique=True, null=True)
+    social_id = models.PositiveIntegerField(null=True)
     email = models.EmailField(max_length=40, unique=True, null=False, blank=False)
     gender = models.CharField(max_length=10, null=True)
     is_superuser = models.BooleanField(default=False)

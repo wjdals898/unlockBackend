@@ -1,3 +1,4 @@
+from accounts.models import Counselor, Counselee
 from .models import Reservation
 from .serializers import ReservationSerializer
 from rest_framework.views import APIView
@@ -16,12 +17,10 @@ class ReservationListAPIView(APIView):
         if serializer.is_valid():
             date = serializer.validated_data['date']
             time = serializer.validated_data['time']
-            
-            # 중복 여부 확인
+
             if Reservation.objects.filter(date=date, time=time).exists():
-                return Response({'error': '중복된 값입니다.'}, status=400)
-            
-            # 중복이 없을 경우 예약 생성
+                return Response({'error':'예약할 수 없습니다.'}, status=400)
+
             serializer.save()
             return Response(serializer.data, status=201)
         
@@ -36,8 +35,8 @@ class ReservationEditAPIView(APIView):
         return get_object_or_404(Reservation, pk=pk)
     #특정 예약 정보 가져오기
     def get(self, request, pk):
-        post = self.get_object(pk)
-        serializer = ReservationSerializer(post)
+        reservation = self.get_object(pk)
+        serializer = ReservationSerializer(reservation)
         return Response(serializer.data)
     # 특정 예약 정보 수정
     def put(self, request, pk):

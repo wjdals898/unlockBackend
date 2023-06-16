@@ -5,13 +5,54 @@ from django.db.models import Q
 from .forms import PresForm
 from datetime import datetime
 from django.contrib import messages
+from .serializers import *
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
+import jwt
+from rest_framework import status, generics
+
+import os
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
+ALGORITHM = os.environ.get('ALGORITHM')
 
 # Create your views here.
 
-# 내담자 ID 받아서 나의 ID와 해당하는 내담자 ID로 결과 리스트 뽑기
-def result_view(request, cse_id):
-    results = Result.objects.filter(counselor_id=request.user, counselee_id=cse_id).all().order_by('-date')
-    return render(request, 'result_app/results.html', {"results":results})
+# 내담자 List
+class CounseleeListView(APIView):
+
+    def get(self, request):
+        token = request.headers.get('Authorization').split(' ')[1]
+        if not token:
+            return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
+        payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
+        user_id = payload.get('user_id')
+        counselor_id = Counselor.objects.get(userkey=user_id)
+
+        cse = Result.objects.filter(counselor_id=counselor_id['id']).order_by("counselor_id").distinct()
+        serializer = ResultSerializer(cse, many=True)
+        return Response(serializer.data)
+
+
+# 내담자 선택 후 내담자 결과 리스트 뽑기
+class ResultListView(APIView):
+
+    def get(self, request, cseId):
+        results = Result.objects.filter(counselor_id=request.data['id'], counselee_id=cseId).all()
+        serializer = ResultSerializer(results, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ResultSerializer(request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+
+
+
+
 
 # 결과 ID 받아서 해당 결과의 처방전 보여주기
 def pres_view(request, result_id):

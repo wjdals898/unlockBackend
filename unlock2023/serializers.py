@@ -1,15 +1,7 @@
 from rest_framework import serializers
 from .models import Counselor, Counselee, Reservation
+from accounts.serializers import CounseleeSerializer, CounselorSerializer
 
-class CounselorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Counselor
-        fields = ['user_id1']
-
-class CounseleeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Counselee
-        fields = ['user_id2']
 
 class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
