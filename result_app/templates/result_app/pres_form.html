@@ -1,0 +1,18 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Add Prescription</h2>
+    <form action="" method="POST">
+        {% csrf_token %}
+            <div>
+                {{content.content.label_tag}}
+            </div>
+            {{content.content}}
+        <input type="submit">
+    </form>
+</body>
+</html>

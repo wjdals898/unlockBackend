@@ -1,0 +1,35 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription</title>
+</head>
+<body>
+    <div>
+    <h1>처방전</h1>
+    {% if pres.content == None %}
+        {{pres.content}}
+        <a href="{% url 'result_app:update_pres' pres.id %}">수정</a>
+        <a href="{% url 'result_app:delete_pres' pres.id %}">삭제</a>
+    {% elif %}
+        <a href="{% url 'result_app:add_pres' %}">처방전 추가</a>
+
+        <!-- div>
+        <form action="{% url 'result_app:add_pres' pres.result_id %}" method="post">
+            {% csrf_token %}
+            <div>
+                <label for="content" class="form-label">처방전</label>
+                <textarea {% if not user.is_authenticated %}disabled{% endif %}
+                          name="content" id="content" class="form-control" rows="10"></textarea>
+            </div>
+            <input type="submit" value="답변등록" class="btn btn-primary">
+        </form>
+        </div -->
+
+    {% endif %}
+    
+    
+    </div>
+</body>
+</html>
