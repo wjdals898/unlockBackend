@@ -16,8 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from unlock2023 import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('result_app/', include("result_app.urls")),
+    path('account/', include('accounts.urls')),
+    path('account/', include('allauth.urls')),
+    path('selfcheck/', include('selfcheck.urls')),
+    path('reservation/', views.ReservationListAPIView.as_view()),
+    path('reservation/<int:pk>/',views.ReservationEditAPIView.as_view())
 ]
