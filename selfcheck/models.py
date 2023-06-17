@@ -4,7 +4,7 @@ from accounts.models import Counselee
 
 class SelfCheck(models.Model):
     id = models.AutoField(primary_key=True)
-    counselee_id = models.ForeignKey(Counselee, on_delete=models.CASCADE,  db_column="counselee_id", related_name="selfcheck")
+    counselee_id = models.ForeignKey(Counselee, on_delete=models.CASCADE,  db_column="counselee_id", related_name="selfcheck_id")
     date = models.DateTimeField(auto_now_add=True)
 
     PUBLIC_CHOICES = [

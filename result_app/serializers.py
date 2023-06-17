@@ -1,18 +1,26 @@
 from .models import *
-from accounts.serializers import *
 from rest_framework import serializers
 
 class ResultSerializer(serializers.ModelSerializer):
-    counselor_id = CounselorSerializer(read_only=True)
-
+    #prescription_id = PrescriptionSerializer(many=True, read_only=True)
     class Meta:
         model = Result
-        fields = "__all__"
+        fields = [
+            'counselor',
+            'counselee',
+            'date',
+            'video_url',
+            'analysis_url',
+            'prescription_id'
+        ]
 
 class PrescriptionSerializer(serializers.ModelSerializer):
-    result_id = ResultSerializer(read_only=True)
+    result = ResultSerializer(read_only=True)
 
     class Meta:
         model = Prescription
         fields = "__all__"
+
+
+
 

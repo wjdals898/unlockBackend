@@ -20,7 +20,7 @@ from unlock2023 import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('result_app/', include("result_app.urls")),
+    path('', include("result_app.urls")),
     path('account/', include('accounts.urls')),
     path('account/', include('allauth.urls')),
     path('selfcheck/', include('selfcheck.urls')),
