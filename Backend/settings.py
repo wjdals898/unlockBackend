@@ -45,7 +45,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'result_app.apps.ResultAppConfig',
-    'unlock2023.apps.Unlock2023Config',
+    #'unlock2023.apps.Unlock2023Config',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,7 +57,7 @@ INSTALLED_APPS = [
 
     'accounts',
     'selfcheck',
-
+    'unlock2023',
 
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
@@ -96,7 +96,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,

@@ -18,7 +18,6 @@ ALGORITHM = os.environ.get('ALGORITHM')
 class SelfCheckList(APIView):
     authentication = [JWTAuthentication]
     def get(self, request):
-        #token = request.COOKIES.get('access')
         token = request.headers.get('Authorization').split(' ')[1]
         if not token:
             return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
@@ -37,7 +36,6 @@ class SelfCheckList(APIView):
 
     def post(self, request):
         token = request.headers.get('Authorization').split(' ')[1]
-        data = request.data.get('data')
         if not token:
             return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
 
@@ -49,7 +47,9 @@ class SelfCheckList(APIView):
 
             new_selfcheck = SelfCheck.objects.create(
                 counselee_id=counselee,
-                public_yn=data.get('public_yn')
+                public_yn=request.data.get('public_yn'),
+                video_url=request.data.get('video_url'),
+                analysis_url=request.data.get('analysis_url')
             )
 
             serializer = SelfCheckSerializer(new_selfcheck)
@@ -60,8 +60,9 @@ class SelfCheckList(APIView):
 def selfCheck(s_id):
     try:
         selfcheck = SelfCheck.objects.get(id=s_id)
+        print(selfcheck)
     except SelfCheck.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return None
     return selfcheck
 
 
@@ -71,13 +72,18 @@ class SelfCheckDetail(APIView):
     def get(self, request):
         selfcheck = selfCheck(request.data['id'])
 
+        if selfcheck == None:
+            return Response({"msg": "일기장이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = SelfCheckSerializer(selfcheck)
+        print(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request):
         selfcheck = selfCheck(request.data['id'])
 
-        serializer = SelfCheckSerializer(selfcheck, data=request.data)
+        serializer = SelfCheckSerializer(instance=selfcheck, data=request.data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

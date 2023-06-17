@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import Counselor, Counselee, Reservation
-from accounts.serializers import CounseleeSerializer, CounselorSerializer
+
+from accounts.serializers import CounselorSerializer, CounseleeSerializer
+from .models import Reservation
 
 
 class ReservationSerializer(serializers.ModelSerializer):

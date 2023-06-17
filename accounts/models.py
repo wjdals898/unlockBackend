@@ -59,9 +59,9 @@ class User(AbstractBaseUser):
 
 class Counselor(models.Model):
     id = models.AutoField(primary_key=True)
-    userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselor")
+    userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselor_id")
 
 
 class Counselee(models.Model):
     id = models.AutoField(primary_key=True)
-    userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselee")
+    userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselee_id")
