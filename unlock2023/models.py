@@ -26,8 +26,8 @@ TIME_CHOICES = [
 
 
 class Reservation(models.Model):
-    Counselor_id = models.ForeignKey(Counselor, on_delete=models.CASCADE, db_column='Counselor_id')
-    Counselee_id = models.ForeignKey(Counselee, on_delete=models.CASCADE, db_column='Counselee_id')
+    counselor_id = models.ForeignKey(Counselor, on_delete=models.CASCADE, db_column='counselor_id')
+    counselee_id = models.ForeignKey(Counselee, on_delete=models.CASCADE, db_column='counselee_id')
     date = models.DateField()
     time = models.CharField(max_length=10, choices=TIME_CHOICES)
     type = models.CharField(max_length=10, choices=STATUS_CHOICES)

@@ -5,6 +5,8 @@ from .models import Reservation
 
 
 class ReservationSerializer(serializers.ModelSerializer):
+    #counselor_id = CounselorSerializer(read_only=True)
+    #counselee_id = CounseleeSerializer(read_only=True)
     class Meta:
         model = Reservation
-        fields = ['Counselor_id', 'Counselee_id', 'date', 'time', 'type']
+        fields = ['counselor_id', 'counselee_id', 'date', 'time', 'type']

@@ -17,8 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_staff',
             'created_at',
             'updated_at',
-            #'counselor_id',
-            #'counselee_id'
+            'last_login',
         ]
 
 
@@ -37,7 +36,6 @@ class CounselorSerializer(serializers.ModelSerializer):
 
 class CounseleeSerializer(serializers.ModelSerializer):
     result_id = ResultSerializer(read_only=True, required=False, many=True)
-    #selfcheck_id = SelfCheckSerializer(read_only=True, many=True, required=False)
     userkey = UserSerializer(read_only=True)
 
     class Meta:
@@ -46,7 +44,6 @@ class CounseleeSerializer(serializers.ModelSerializer):
             'id',
             'userkey',
             'result_id',
-            #'selfcheck_id',
         ]
 
 

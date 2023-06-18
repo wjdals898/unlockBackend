@@ -31,12 +31,12 @@ class ReservationListAPIView(APIView):
             if Counselor.objects.filter(userkey_id=user_id).exists():
                 counselor_id = Counselor.objects.get(userkey_id=user_id)
                 print(f"line32: {counselor_id}")
-                reservations = Reservation.objects.filter(Counselor_id=counselor_id)
+                reservations = Reservation.objects.filter(counselor_id=counselor_id)
                 print(f"line34: {reservations}")
             elif Counselee.objects.filter(userkey_id=user_id).exists():
                 counselee_id = Counselee.objects.get(userkey_id=user_id)
                 print(f"line32: {counselee_id}")
-                reservations = Reservation.objects.filter(Counselee_id=counselee_id)
+                reservations = Reservation.objects.filter(counselee_id=counselee_id)
                 print(f"line34: {reservations}")
             serializer = ReservationSerializer(reservations, many=True)
 
@@ -54,7 +54,7 @@ class ReservationListAPIView(APIView):
         payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
         user_id = payload.get('user_id')
 
-        if Reservation.objects.filter(date=data.get('date'), time=data.get('time')).exists():
+        if Reservation.objects.filter(date=data.get('date'), time=data.get('time'), counselor_id=data.get('counselor_id')).exists():
             return Response({'error': '예약할 수 없습니다.'}, status=400)
 
         if Counselee.objects.filter(userkey_id=user_id).exists():
@@ -62,8 +62,8 @@ class ReservationListAPIView(APIView):
             counselor = Counselor.objects.get(id=data.get('counselor_id'))
 
             new_reservation = Reservation.objects.create(
-                Counselee_id=counselee,
-                Counselor_id=counselor,
+                counselee_id=counselee,
+                counselor_id=counselor,
                 date=data.get('date'),
                 time=data.get('time'),
                 type=data.get('type')
@@ -84,19 +84,24 @@ def reservation(s_id):
     return reservation
 
 
+
+
+
 # 포스팅 내용, 수정, 삭제
 class ReservationEditAPIView(APIView):
     authentication_classes = [JWTAuthentication]
 
     # 특정 예약 정보 가져오기
     def get(self, request):
-        reser = reservation(request.data['id'])
 
+        reser = reservation(request.data['id'])
         serializer = ReservationSerializer(reser)
+        print(reser)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # 특정 예약 정보 삭제
     def delete(self, request):
+
         reser = reservation(request.data['id'])
         reser.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

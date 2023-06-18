@@ -71,7 +71,7 @@ class KakaoLoginView(APIView):
         try:
             user = User.objects.get(social_id=social_id)
             print(f"105 line: {user.name}")
-            social_user = SocialAccount.objects.filter(user=user).first()
+            social_user = SocialAccount.objects.get(user=user)
             print(f"107 line: {social_user}")
             # 로그인
             if social_user:
@@ -89,8 +89,7 @@ class KakaoLoginView(APIView):
                 res.set_cookie('access', str(token.access_token))
                 res.set_cookie('refresh', str(token))
                 return res
-
-        except User.DoesNotExist:
+        except User.DoesNotExist or SocialAccount.DoesNotExist:
 
             if user_information['kakao_account']['gender'] == "male":
                 gender = "M"
@@ -109,7 +108,9 @@ class KakaoLoginView(APIView):
             new_user.save()
 
             SocialAccount.objects.create(
-                user_id=new_user.id,
+                user=new_user,
+                provider='kakao',
+                uid='social_id',
             )
             data = {
                 'name': new_user.name,
