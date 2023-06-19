@@ -8,6 +8,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from accounts.models import *
 from .serializers import *
+from .models import *
 
 # Create your views here.
 
@@ -32,6 +33,7 @@ class ReservationListAPIView(APIView):
                 counselor_id = Counselor.objects.get(userkey_id=user_id)
                 print(f"line32: {counselor_id}")
                 reservations = Reservation.objects.filter(counselor_id=counselor_id)
+
                 print(f"line34: {reservations}")
             elif Counselee.objects.filter(userkey_id=user_id).exists():
                 counselee_id = Counselee.objects.get(userkey_id=user_id)
@@ -60,13 +62,14 @@ class ReservationListAPIView(APIView):
         if Counselee.objects.filter(userkey_id=user_id).exists():
             counselee = Counselee.objects.get(userkey_id=user_id)
             counselor = Counselor.objects.get(id=data.get('counselor_id'))
+            type_id = CounselingType.objects.get(id=data.get('type'))
 
             new_reservation = Reservation.objects.create(
                 counselee_id=counselee,
                 counselor_id=counselor,
                 date=data.get('date'),
                 time=data.get('time'),
-                type=data.get('type')
+                type=type_id
             # 다른 예약 정보 필드 설정
             )
 

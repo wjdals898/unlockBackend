@@ -4,8 +4,6 @@ from django.urls import reverse
 from accounts.serializers import CounseleeSerializer
 from .models import Result, Prescription
 from accounts.models import Counselor, Counselee
-from django.db.models import Q
-from .forms import PresForm
 from datetime import datetime
 from django.contrib import messages
 from .serializers import *
@@ -36,7 +34,6 @@ class CounseleeListView(APIView):
             counselor = Counselor.objects.get(userkey=user_id)
 
             cse = Result.objects.filter(counselor_id=counselor.id).values_list('counselee', flat=True).distinct().order_by("counselor_id")
-            print()
 
             counselee_id = cse.values()[0].get('counselee_id')
 
