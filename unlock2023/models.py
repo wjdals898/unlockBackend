@@ -19,9 +19,6 @@ TIME_CHOICES = [
 class CounselingType(models.Model):
     type = models.CharField(max_length = 30)
 
-    def __str__(self):
-        return self.type
-
 
 
 class Reservation(models.Model):
@@ -32,3 +29,9 @@ class Reservation(models.Model):
     type = models.ForeignKey(CounselingType, on_delete=models.CASCADE, db_column='type')
 
 # Create your models here.
+class Counselor_list(models.Model):
+    c_id = models.ForeignKey(Counselor, on_delete=models.CASCADE, db_column='c_id')
+    institution_name = models.CharField(max_length=50)
+    institution_address = models.CharField(max_length=100)
+    credit = models.CharField(max_length=30)
+    prof_field = models.ForeignKey(CounselingType, on_delete=models.CASCADE, db_column='prof_field')

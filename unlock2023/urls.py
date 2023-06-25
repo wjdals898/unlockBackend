@@ -7,5 +7,6 @@ app_name = 'unlock2023'
 
 urlpatterns = [
     path('', ReservationListAPIView.as_view()),
-    path('reservationdetail/', ReservationEditAPIView.as_view())
+    path('reservationdetail/', ReservationEditAPIView.as_view()),
+    path('counselorlist/', Counselor_listAPIView.as_view())
 ]
