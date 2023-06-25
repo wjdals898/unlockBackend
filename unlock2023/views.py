@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from accounts.models import *
 from .serializers import *
+from .models import *
 
 # Create your views here.
 
@@ -32,6 +32,7 @@ class ReservationListAPIView(APIView):
                 counselor_id = Counselor.objects.get(userkey_id=user_id)
                 print(f"line32: {counselor_id}")
                 reservations = Reservation.objects.filter(counselor_id=counselor_id)
+
                 print(f"line34: {reservations}")
             elif Counselee.objects.filter(userkey_id=user_id).exists():
                 counselee_id = Counselee.objects.get(userkey_id=user_id)
@@ -53,20 +54,24 @@ class ReservationListAPIView(APIView):
 
         payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
         user_id = payload.get('user_id')
+        print(user_id)
+        print(payload)
 
         if Reservation.objects.filter(date=data.get('date'), time=data.get('time'), counselor_id=data.get('counselor_id')).exists():
             return Response({'error': '예약할 수 없습니다.'}, status=400)
 
         if Counselee.objects.filter(userkey_id=user_id).exists():
             counselee = Counselee.objects.get(userkey_id=user_id)
+            print(Counselee.userkey)
             counselor = Counselor.objects.get(id=data.get('counselor_id'))
+            type_id = CounselingType.objects.get(id=data.get('type'))
 
             new_reservation = Reservation.objects.create(
                 counselee_id=counselee,
                 counselor_id=counselor,
                 date=data.get('date'),
                 time=data.get('time'),
-                type=data.get('type')
+                type=type_id
             # 다른 예약 정보 필드 설정
             )
 
@@ -105,3 +110,48 @@ class ReservationEditAPIView(APIView):
         reser = reservation(request.data['id'])
         reser.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class Counselor_listAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    #상담사 리스트 가져오기
+    def get(self, request):
+        list = Counselor_list.objects.all()
+        serializer = CounselorlistSerializer(list, many=True)
+        print(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    #상담사 개인 정보 입력하기
+    def post(self, request):
+        token = request.headers.get('Authorization').split(' ')[1]
+        data = request.data.get('data')
+        if not token:
+            return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
+
+        payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
+        user_id = payload.get('user_id')
+        print(user_id)
+        print(payload)
+
+        if Counselor.objects.filter(userkey_id=user_id).exists():
+            user = User.objects.get(id=user_id)
+            print(user)
+            user_table_id = user.id
+            print(user_table_id)
+            counselor = Counselor.objects.get(userkey_id=user_table_id)
+            print(counselor)
+            user = counselor.userkey
+            counselorlist_name = user.name
+            print(counselorlist_name)
+            prof = CounselingType.objects.get(type=data.get('prof_field'))
+            n_l = Counselor_list.objects.create(
+                c_id=counselor,
+                institution_name=data.get('institution_name'),
+                institution_address=data.get('institution_address'),
+                credit=data.get('credit'),
+                prof_field=prof
+            )
+            serializer = ReservationSerializer(n_l)
+            print(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({"msg": "상담자로 등록할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)

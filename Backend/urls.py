@@ -25,5 +25,5 @@ urlpatterns = [
     path('account/', include('allauth.urls')),
     path('selfcheck/', include('selfcheck.urls')),
     path('reservation/', include('unlock2023.urls')),
-    path('reservation/', include('rest_framework.urls')),
+    path('reservation/', include('rest_framework.urls'))
 ]

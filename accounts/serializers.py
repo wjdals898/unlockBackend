@@ -43,7 +43,7 @@ class CounseleeSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'userkey',
-            'result_id',
+            'result_id'
         ]
 
 
