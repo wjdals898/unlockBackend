@@ -1,5 +1,5 @@
 from .models import *
-from rest_framework import serializers
+from rest_framework import serializers, viewsets
 from result_app.serializers import ResultSerializer
 
 
@@ -46,27 +46,6 @@ class CounseleeSerializer(serializers.ModelSerializer):
             'result_id',
         ]
 
-
-class CounseleeListSerializer(serializers.ModelSerializer):
-    counselor = CounselorSerializer(read_only=True)
-    counselee = CounseleeSerializer(read_only=True)
-
-    class Meta:
-        model = CounseleeList
-        fields = [
-            'id',
-            'counselor',
-            'counselee',
-        ]
-
-
-class CounselingTypeSerializer(serializers.ModelSerializer):
-    counseling_type = CounselorSerializer(read_only=True)
-
-    class Meta:
-        model = CounselingType
-        fields = [
-            'id',
-            'label',
-            'counseling_type',
-        ]
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

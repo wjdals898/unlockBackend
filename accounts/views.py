@@ -1,3 +1,4 @@
+import json
 from json import JSONDecodeError
 
 import jwt
@@ -8,7 +9,6 @@ from rest_framework.response import Response
 from allauth.socialaccount.models import SocialAccount
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
-from rest_framework_simplejwt.tokens import RefreshToken
 import requests
 import os
 
@@ -16,7 +16,7 @@ from .serializers import *
 
 BASE_URL = 'http://127.0.0.1:8000/'
 KAKAO_CALLBACK_URI = BASE_URL + 'account/kakao/callback/'
-KAKAO_LOGOUT_URI = BASE_URL + 'account/kakao/login/'
+KAKAO_LOGOUT_URI = BASE_URL + 'account/kakao/logout/callback/'
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 ALGORITHM = os.environ.get('ALGORITHM')
@@ -30,6 +30,7 @@ def kakao_login(request):
 class KakaoLoginView(APIView):
 
     def post(self, request):
+        '''
         # 리액트에서 장고로 kakao access code 보냄
         kakao_access_code = request.GET.get('code', None)
         print(f"code = {kakao_access_code}")
@@ -58,7 +59,8 @@ class KakaoLoginView(APIView):
         print(f"(2) error = {error}")
         if error is not None:
             raise JSONDecodeError(error)
-
+        '''
+        access_token = request.data.get('access_token')
         # access token으로 카카오 계정 정보 가져오기
         url = "https://kapi.kakao.com/v2/user/me"
         headers = {
@@ -72,7 +74,7 @@ class KakaoLoginView(APIView):
         try:
             user = User.objects.get(social_id=social_id)
             print(f"105 line: {user.name}")
-            social_user = SocialAccount.objects.filter(user=user).first()
+            social_user = SocialAccount.objects.get(user=user)
             print(f"107 line: {social_user}")
             # 로그인
             if social_user:
@@ -80,37 +82,38 @@ class KakaoLoginView(APIView):
                     BlacklistedToken.objects.get_or_create(token=token)
 
                 token = TokenObtainPairSerializer.get_token(user)
-                # token = RefreshToken.for_user(user)
+
                 data = {
                     'name': user.name,
                     'email': user.email,
-                    #'gender': user.gender
+                    'gender': user.gender,
                 }
                 res = Response({'user': data, 'refresh': str(token), 'access': str(token.access_token), "msg": "로그인 성공"}, status=status.HTTP_200_OK)
                 res.set_cookie('access', str(token.access_token))
                 res.set_cookie('refresh', str(token))
                 return res
+        except User.DoesNotExist or SocialAccount.DoesNotExist:
 
-        except User.DoesNotExist:
-            '''
             if user_information['kakao_account']['gender'] == "male":
                 gender = "M"
             elif user_information['kakao_account']['gender'] == "female":
                 gender = "F"
             else:
                 gender = None
-'''
+
             new_user = User.objects.create_user(
                 email=user_information['kakao_account'].get('email', None),
                 name=user_information['properties'].get('nickname'),
                 social_id=social_id,
-                #gender=gender,
+                gender=gender,
             )
             new_user.set_unusable_password()
             new_user.save()
 
             SocialAccount.objects.create(
-                user_id=new_user.id,
+                user=new_user,
+                provider='kakao',
+                uid=social_id,
             )
             data = {
                 'name': new_user.name,
@@ -118,7 +121,7 @@ class KakaoLoginView(APIView):
                 'gender': new_user.gender
             }
             token = TokenObtainPairSerializer.get_token(new_user)
-            # token = RefreshToken.for_user(new_user)
+
             res = Response({'user': data, 'refresh': str(token), 'access': str(token.access_token), "msg": "회원가입 성공"}, status=status.HTTP_201_CREATED)
             res.set_cookie('access', str(token.access_token))
             res.set_cookie('refresh', str(token))
@@ -126,37 +129,29 @@ class KakaoLoginView(APIView):
             return res
 
 
-class KakaoLogout(APIView):
+def kakao_logout(request):
+    client_id = os.environ.get("SOCIAL_AUTH_KAKAO_CLIENT_ID")
 
+    return redirect(f"https://kauth.kakao.com/oauth/logout?client_id={client_id}&logout_redirect_uri={KAKAO_LOGOUT_URI}")
+
+
+class KakaoLogoutCallback(APIView):
     def get(self, request):
-        admin_key = os.environ.get("KAKAO_ADMIN_KEY")
-        kakao_logout_api = "https://kapi.kakao.com/v1/user/unlink"
-
-        refresh = request.COOKIES.get('refresh')
-        refresh_token = RefreshToken(refresh) # refresh token 정보 가져오기
+        refresh_token = request.COOKIES.get('refresh')
 
         if not refresh_token:
             return Response({"err_msg": "유효하지 않거나 만료된 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
         payload = jwt.decode(str(refresh_token), SECRET_KEY, ALGORITHM)
         user_id = payload.get('user_id')
-        user = User.objects.get(id=user_id)
-        social_id = user.social_id
-
-        headers = {"Authorization": f"KakaoAK {admin_key}"}
-        data = {"target_id_type": "user_id", "target_id": social_id}
-        logout_response_json = requests.post(kakao_logout_api, headers=headers, data=data).json()
-
-        response = logout_response_json.get("id")
-        if social_id != response:
-            return Response({"err_msg": "로그아웃 실패"})
-
-        res = Response({'success': f"{response} 로그아웃 성공"}, status=status.HTTP_200_OK)
 
         for token in OutstandingToken.objects.filter(user_id=user_id):
             BlacklistedToken.objects.get_or_create(token=token)
 
+        res = Response({'success': f"{user_id} 로그아웃 성공"}, status=status.HTTP_200_OK)
+
         res.set_cookie('access', None)
         res.set_cookie('refresh', None)
+
         return res
 
 
@@ -202,6 +197,7 @@ class AuthAPIView(APIView):
 
             user_id = payload.get('user_id')
             user = User.objects.get(id=user_id)
+            print(user)
             user_type = ""
             if Counselor.objects.filter(userkey_id=user_id): # 상담사
                 user_type = "상담사"
@@ -210,7 +206,9 @@ class AuthAPIView(APIView):
             else:
                 return Response({'msg': '회원 유형 없음'}, status=status.HTTP_404_NOT_FOUND)
 
+            print(user_type)
             serializer = UserSerializer(instance=user)
+            print(serializer.data)
             data = {
                 'social_id': serializer.data['social_id'],
                 'email': serializer.data['email'],
@@ -218,7 +216,7 @@ class AuthAPIView(APIView):
                 'gender': serializer.data['gender'],
                 'type': user_type,
             }
-            return Response(data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except jwt.exceptions.InvalidTokenError:
             res = Response({'err_msg': '사용불가토큰'}, status=status.HTTP_401_UNAUTHORIZED)
             return res
@@ -278,7 +276,8 @@ class CounselorView(APIView):
 
         if Counselor.objects.filter(userkey_id=user_id).exists():
             counselor = Counselor.objects.get(userkey_id=user_id)
-            serializer = CounselorSerializer(instance=counselor)
+            serializer = CounselorSerializer(counselor)
+            print(serializer.data)
             data = {
                 'counselor_id': serializer.data['id'],
                 'social_id': serializer.data['userkey']['social_id'],
@@ -286,12 +285,68 @@ class CounselorView(APIView):
                 'name': serializer.data['userkey']['name'],
                 'gender': serializer.data['userkey']['gender'],
             }
-            return Response(data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({"msg": "상담사가 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CounseleeView(APIView):
+    def get(self, request):
+        print("line294")
+        token = request.headers.get('Authorization').split(' ')[1]
+        print(token)
+        if not token:
+            return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
+
+        payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
+        user_id = payload.get('user_id')
+
+        if Counselor.objects.filter(userkey=user_id).exists(): # 요청한 사람이 상담사인지 확인
+            print(request.GET.get('email'))
+            user = User.objects.get(email=request.GET.get('email'))
+            counselee = Counselee.objects.get(userkey_id=user.id)
+            serializer = CounseleeSerializer(counselee)
+            data = {
+                'email': serializer.data['userkey']['email'],
+                'name': serializer.data['userkey']['name'],
+                'gender': serializer.data['userkey']['gender'],
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        else:
+            return Response({"msg": "내담자가 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CounseleeListView(APIView):
+    def post(self, request):
+        token = request.headers.get('Authorization').split(' ')[1]
+        print(token)
+        if not token:
+            return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
+
+        payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
+        user_id = payload.get('user_id')
+
+        if Counselor.objects.filter(userkey=user_id).exists():  # 요청한 사람이 상담사인지 확인
+            counselor = Counselor.objects.get(userkey_id=user_id)
+            user = User.objects.get(email=request.data.get('email'))
+            if Counselee.objects.filter(userkey=user).exists():
+                counselee = Counselee.objects.get(userkey=user)
+
+                if CounseleeList.objects.filter(counselor=counselor, counselee=counselee).exists():
+                    return Response({"msg": "이미 추가한 내담자입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+                CounseleeList.objects.create(
+                    counselor=counselor,
+                    counselee=counselee
+                )
+
+                serializer = CounseleeSerializer(counselee)
+                return Response(serializer.data['userkey'], status=status.HTTP_200_OK)
+            else:
+                return Response({"msg": "해당하는 내담자 없음"}, status=status.HTTP_204_NO_CONTENT)
+
+        return Response({"msg": "상담사 외 접근 불가"}, status=status.HTTP_400_BAD_REQUEST)
+
     def get(self, request):
         token = request.headers.get('Authorization').split(' ')[1]
         print(token)
@@ -301,16 +356,20 @@ class CounseleeView(APIView):
         payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
         user_id = payload.get('user_id')
 
-        if Counselee.objects.filter(userkey_id=user_id).exists():
-            counselee = Counselee.objects.get(userkey_id=user_id)
-            serializer = CounseleeSerializer(instance=counselee)
-            data = {
-                'id': serializer.data['id'],
-                'social_id': serializer.data['userkey']['social_id'],
-                'email': serializer.data['userkey']['email'],
-                'name': serializer.data['userkey']['name'],
-                'gender': serializer.data['userkey']['gender'],
-            }
+        try:
+            counselor = Counselor.objects.get(userkey_id=user_id)
+            cList = CounseleeList.objects.filter(counselor=counselor)
+            list_serializer = CounseleeListSerializer(cList, many=True)
+
+            userkey_list = [item['counselee']["userkey"] for item in list_serializer.data]
+            data = json.dumps(userkey_list)
+            print(data)
             return Response(data, status=status.HTTP_200_OK)
-        else:
-            return Response({"msg": "내담자가 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        except Counselor.DoesNotExist:
+            return Response({"msg": "상담사가 아닙니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        item = CounseleeList(request.data['id'])
+
+        item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -12,5 +12,6 @@ urlpatterns = [
     path('usertype/', UserTypeView.as_view(), name='user_type'),    # 카카오 회원가입 후 회원 유형 선택 시 연결
     path('counselor/', CounselorView.as_view(), name='counselor'),
     path('counselee/', CounseleeView.as_view(), name='counselee'),
+    path('counseleeList/', CounseleeListView.as_view(), name='counselee_list'),
     path('token/refresh/', TokenRefreshView.as_view()),    # 토큰 재발급하기
 ]

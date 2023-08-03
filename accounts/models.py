@@ -42,6 +42,7 @@ class User(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    last_login = models.DateTimeField(auto_now=True, null=True)
 
     objects = UserManager()
 
@@ -57,11 +58,23 @@ class User(AbstractBaseUser):
         return True
 
 
+class CounselingType(models.Model):
+    id = models.AutoField(primary_key=True)
+    label = models.CharField(max_length=50, unique=True)
+
+
 class Counselor(models.Model):
     id = models.AutoField(primary_key=True)
-    userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselor")
+    userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselor_id")
+    #counseling_type = models.ForeignKey(CounselingType, on_delete=models.SET_NULL, null=True, db_column="counseling_type", related_name="counseling_type")
 
 
 class Counselee(models.Model):
     id = models.AutoField(primary_key=True)
-    userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselee")
+    userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselee_id")
+
+
+class CounseleeList(models.Model):
+    id = models.AutoField(primary_key=True)
+    counselor = models.ForeignKey(Counselor, on_delete=models.CASCADE, db_column="counselor", related_name="list_counselor")
+    counselee = models.ForeignKey(Counselee, on_delete=models.CASCADE, db_column="counselee", related_name="list_counselee")
