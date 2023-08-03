@@ -116,8 +116,8 @@ class Counselor_listAPIView(APIView):
 
     #상담사 리스트 가져오기
     def get(self, request):
-        list = Counselor_list.objects.all()
-        serializer = CounselorlistSerializer(list, many=True)
+        list = Counselor.objects.all()
+        serializer = CounselorSerializer(list, many=True)
         print(serializer)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -134,6 +134,8 @@ class Counselor_listAPIView(APIView):
         print(payload)
 
         if Counselor.objects.filter(userkey_id=user_id).exists():
+            return Response({"msg": "상담자로 등록할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
             user = User.objects.get(id=user_id)
             print(user)
             user_table_id = user.id
@@ -144,8 +146,8 @@ class Counselor_listAPIView(APIView):
             counselorlist_name = user.name
             print(counselorlist_name)
             prof = CounselingType.objects.get(type=data.get('prof_field'))
-            n_l = Counselor_list.objects.create(
-                c_id=counselor,
+            n_l = Counselor.objects.create(
+                userkey=user,
                 institution_name=data.get('institution_name'),
                 institution_address=data.get('institution_address'),
                 credit=data.get('credit'),
@@ -154,4 +156,3 @@ class Counselor_listAPIView(APIView):
             serializer = ReservationSerializer(n_l)
             print(serializer)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({"msg": "상담자로 등록할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)

@@ -58,9 +58,17 @@ class User(AbstractBaseUser):
         return True
 
 
+class CounselingType(models.Model):
+    type = models.CharField(max_length = 30)
+
+
 class Counselor(models.Model):
     id = models.AutoField(primary_key=True)
     userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselor_id")
+    institution_name = models.CharField(max_length=50)
+    institution_address = models.CharField(max_length=100)
+    credit = models.CharField(max_length=30)
+    prof_field = models.ForeignKey(CounselingType, on_delete=models.CASCADE, db_column='prof_field')
 
 
 class Counselee(models.Model):
