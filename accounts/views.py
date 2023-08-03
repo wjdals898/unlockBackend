@@ -1,3 +1,4 @@
+import json
 from json import JSONDecodeError
 
 import jwt
@@ -29,6 +30,7 @@ def kakao_login(request):
 class KakaoLoginView(APIView):
 
     def post(self, request):
+        '''
         # 리액트에서 장고로 kakao access code 보냄
         kakao_access_code = request.GET.get('code', None)
         print(f"code = {kakao_access_code}")
@@ -57,7 +59,8 @@ class KakaoLoginView(APIView):
         print(f"(2) error = {error}")
         if error is not None:
             raise JSONDecodeError(error)
-
+        '''
+        access_token = request.data.get('access_token')
         # access token으로 카카오 계정 정보 가져오기
         url = "https://kapi.kakao.com/v2/user/me"
         headers = {
@@ -83,7 +86,7 @@ class KakaoLoginView(APIView):
                 data = {
                     'name': user.name,
                     'email': user.email,
-                    'gender': user.gender
+                    'gender': user.gender,
                 }
                 res = Response({'user': data, 'refresh': str(token), 'access': str(token.access_token), "msg": "로그인 성공"}, status=status.HTTP_200_OK)
                 res.set_cookie('access', str(token.access_token))
@@ -110,7 +113,7 @@ class KakaoLoginView(APIView):
             SocialAccount.objects.create(
                 user=new_user,
                 provider='kakao',
-                uid='social_id',
+                uid=social_id,
             )
             data = {
                 'name': new_user.name,
@@ -289,6 +292,7 @@ class CounselorView(APIView):
 
 class CounseleeView(APIView):
     def get(self, request):
+        print("line294")
         token = request.headers.get('Authorization').split(' ')[1]
         print(token)
         if not token:
@@ -297,12 +301,12 @@ class CounseleeView(APIView):
         payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
         user_id = payload.get('user_id')
 
-        if Counselee.objects.filter(userkey_id=user_id).exists():
-            counselee = Counselee.objects.get(userkey_id=user_id)
-            serializer = CounseleeSerializer(instance=counselee)
+        if Counselor.objects.filter(userkey=user_id).exists(): # 요청한 사람이 상담사인지 확인
+            print(request.GET.get('email'))
+            user = User.objects.get(email=request.GET.get('email'))
+            counselee = Counselee.objects.get(userkey_id=user.id)
+            serializer = CounseleeSerializer(counselee)
             data = {
-                'id': serializer.data['id'],
-                'social_id': serializer.data['userkey']['social_id'],
                 'email': serializer.data['userkey']['email'],
                 'name': serializer.data['userkey']['name'],
                 'gender': serializer.data['userkey']['gender'],
@@ -310,3 +314,11 @@ class CounseleeView(APIView):
             return Response(data, status=status.HTTP_200_OK)
         else:
             return Response({"msg": "내담자가 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CounselingTypeView(APIView):
+    def get(self, request):
+        types = CounselingType.objects.all()
+        serializer = CounselingTypeSerializer(types, many=True)
+
+        return Response(serializer.data)

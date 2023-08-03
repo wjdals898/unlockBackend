@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
@@ -50,10 +52,10 @@ class CounseleeListView(APIView):
             for serial in serializer.data:
                 cseInformation[n] = {"id":serial["id"]}
                 cseInformation[n]["userkey"] = {"id": serial["userkey"]["id"], "name": serial["userkey"]["name"],
-                                                "gender": serial["userkey"]["gender"]}
+                                                "email":serial["userkey"]["email"], "gender": serial["userkey"]["gender"]}
                 n += 1
 
-            return Response(cseInformation)
+            return Response(json.dumps(cseInformation))
         else:
             return Response({"msg": "상담사가 아니면 볼 수 없습니다."})
 
