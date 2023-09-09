@@ -12,12 +12,13 @@ class UserSerializer(serializers.ModelSerializer):
             'social_id',
             'email',
             'gender',
-            'is_superuser',
-            'is_active',
-            'is_staff',
-            'created_at',
-            'updated_at',
-            'last_login',
+            'birth',
+            # 'is_superuser',
+            # 'is_active',
+            # 'is_staff',
+            # 'created_at',
+            # 'updated_at',
+            # 'last_login',
         ]
 
 
@@ -30,7 +31,7 @@ class CounselingTypeSerializer(serializers.ModelSerializer):
         ]
 
 class CounselorSerializer(serializers.ModelSerializer):
-    result_id = ResultSerializer(read_only=True, required=False, many=True)
+    #result_id = ResultSerializer(read_only=True, required=False, many=True)
     userkey = UserSerializer(read_only=True)
     prof_field = CounselingTypeSerializer(read_only=True)
 
@@ -39,7 +40,7 @@ class CounselorSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'userkey',
-            'result_id',
+            #'result_id',
             'institution_name',
             'institution_address',
             'credit',

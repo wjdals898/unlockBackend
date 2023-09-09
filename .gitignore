@@ -14,7 +14,6 @@ media
 
 ### Python template
 # Byte-compiled / optimized / DLL files
-__pycache__/
 *.py[cod]
 *$py.class
 
@@ -40,6 +39,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+migrations/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -68,13 +68,6 @@ cover/
 
 # Translations
 *.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
 
 # Flask stuff:
 instance/

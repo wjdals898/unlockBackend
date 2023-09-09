@@ -7,11 +7,12 @@ class ResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = Result
         fields = [
+            'id',
             'counselor',
             'counselee',
             'date',
-            'video_url',
-            'analysis_url'
+            'analysis_url',
+            'video',
         ]
 
 

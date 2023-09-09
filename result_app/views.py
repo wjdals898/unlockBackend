@@ -2,6 +2,7 @@ import json
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from rest_framework.parsers import FileUploadParser, MultiPartParser
 
 from accounts.serializers import CounseleeSerializer
 from .models import Result, Prescription
@@ -52,16 +53,18 @@ class CounseleeListView(APIView):
             for serial in serializer.data:
                 cseInformation[n] = {"id":serial["id"]}
                 cseInformation[n]["userkey"] = {"id": serial["userkey"]["id"], "name": serial["userkey"]["name"],
-                                                "email":serial["userkey"]["email"], "gender": serial["userkey"]["gender"]}
+                                                "email": serial["userkey"]["email"], "gender": serial["userkey"]["gender"],
+                                                "birth": serial["userkey"]["birth"]}
                 n += 1
 
             return Response(json.dumps(cseInformation))
         else:
-            return Response({"msg": "상담사가 아니면 볼 수 없습니다."})
+            return Response({"msg": "상담사가 아니면 볼 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 위에서 선택한 내담자의 결과 리스트 뽑기
 class ResultListView(APIView):
+    parser_classes = [MultiPartParser, ]
 
     def get(self, request):
         token = request.headers.get('Authorization').split(' ')[1]
@@ -72,9 +75,10 @@ class ResultListView(APIView):
         
         if Counselor.objects.filter(userkey=user_id).exists():
             counselor_id = Counselor.objects.get(userkey=user_id)
-            
+            print("counselor_id = ", counselor_id)
             try:
-                results = Result.objects.filter(counselor_id=counselor_id.id, counselee_id=request.data['id']).all()
+                print("counselee_id = ", request.GET.get('id'))
+                results = Result.objects.filter(counselor_id=counselor_id.id, counselee_id=request.GET.get('id')).all()
                 serializer = ResultSerializer(results, many=True)
                 return Response(serializer.data)
             except:
@@ -124,8 +128,7 @@ class ResultListView(APIView):
             new_result = Result.objects.create(
                 counselor=counselor,
                 counselee=counselee,
-                video_url=request.data['video_url'],
-                analysis_url=request.data['analysis_url']
+                video=request.FILES.get('video')
             )
 
             serializer = ResultSerializer(new_result)
@@ -225,3 +228,40 @@ class PrescriptionDetail(APIView):
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"msg": "처방전 저장 불가 (상담사만 처방전을 삭제할 수 있습니다"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VideoView(APIView):
+    parser_classes = [MultiPartParser, ]
+    def post(self, request, format=None):
+        token = request.headers.get('Authorization').split(' ')[1]
+        if not token:
+            return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
+
+        payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
+        user_id = payload.get('user_id')
+        print("counselee_id = ", request.data.get('counselee_id'))
+        print(user_id)
+        print(request.FILES)
+        print(request.data.get("video"))
+        if request.data.get('video'):
+            print(request.FILES['video'])
+
+        # 상담사 계정에서 내담자 결과가 있을 경우 동영상 업로드
+        if Counselor.objects.filter(userkey=user_id).exists():
+            print("상담사가 맞습니다.")
+            counselor = Counselor.objects.get(userkey=user_id)
+            if Result.objects.filter(counselor=counselor).exists():
+                result = Result.objects.get(counselor=counselor)
+                print(result)
+                result.video = request.FILES.get('video')
+                result.save()
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+
