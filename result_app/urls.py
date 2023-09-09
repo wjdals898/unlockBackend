@@ -7,8 +7,8 @@ urlpatterns = [
     path('counselee/', CounseleeListView.as_view()),
     path('result/', ResultListView.as_view()),
     path('result/pres/', PrescriptionListView.as_view()),
-    path('result/pres/detail/', PrescriptionDetail.as_view())
-
+    path('result/pres/detail/', PrescriptionDetail.as_view()),
+    path('video/', VideoView.as_view()),
 ]
 
 

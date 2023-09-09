@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 
-
-
 import environ
 import os
 
@@ -38,7 +36,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.35.109']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.35.109',]
 
 
 # Application definition
@@ -61,10 +59,14 @@ INSTALLED_APPS = [
     'unlock2023',
 
     'corsheaders',
+    'storages',
 
     'rest_framework',
-    #'rest_framework_swagger',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt.token_blacklist',
+
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
 
     'allauth',
     'allauth.account',
@@ -75,6 +77,7 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 AUTH_USER_MODEL = 'accounts.User'
+REST_USE_JWT = True
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None # username 필드 사용 x
 ACCOUNT_EMAIL_REQUIRED = True            # email 필드 사용 o
@@ -94,10 +97,11 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticated', # 인증된 사용자만 접근
+        #'rest_framework.permissions.IsAuthenticated', # 인증된 사용자만 접근
         # 'rest_framework.permissions.IsAdminUser', # 관리자만 접근
         'rest_framework.permissions.AllowAny', # 누구나 접근
     ),
+
 }
 
 SIMPLE_JWT = {
@@ -213,10 +217,25 @@ USE_I18N = True
 USE_TZ = False
 
 
+# AWS Setting
+AWS_REGION = env('AWS_REGION')
+AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+
+# 버킷이름.S3.AWS서버지역.amazonaws.com 형식
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.%s.amazonaws.com' % (AWS_STORAGE_BUCKET_NAME, AWS_REGION)
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+# STATIC_URL = 'https://%s/static/' % AWS_S3_CUSTOM_DOMAIN
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+MEDIA_URL = 'https://%s/media/' % AWS_S3_CUSTOM_DOMAIN
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -233,6 +252,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
     "http://localhost:19000",
+    "http://172.20.9.65:19000",
+    "http://172.20.9.65:8000",
+    "http://192.168.35.109:19000",
+    "http://192.168.35.109:8000",
+    "http://172.20.9.81:19000",
+    "http://172.20.9.81:8000",
 ]
 CORS_ORIGIN_WHITELIST = (
     "http://10.205.8.141:19000",
@@ -240,6 +265,10 @@ CORS_ORIGIN_WHITELIST = (
     "http://127.0.0.1:8000",
     "http://localhost:8000",
     "http://localhost:19000",
+    "http://192.168.35.109:19000",
+    "http://192.168.35.109:8000",
+    "http://172.20.9.81:19000",
+    "http://172.20.9.81:8000",
 )
 
 CORS_ALLOW_METHODS = (
@@ -261,8 +290,14 @@ CORS_ALLOW_HEADERS = (
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'Authorization',
+    'Content-Type',
 )
 CSRF_TRUSTED_ORIGINS = [
     "http://10.205.8.141:19000",
     "http://10.205.8.141:8000",
+    "http://192.168.35.109:19000",
+    "http://192.168.35.109:8000",
+    "http://172.20.9.81:19000",
+    "http://172.20.9.81:8000",
 ]

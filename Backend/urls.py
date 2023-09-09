@@ -15,8 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.conf.urls.static import static
 from django.urls import path, include, re_path
 from rest_framework import routers
+from django.conf import settings
 
 from unlock2023 import views
 
@@ -42,3 +44,5 @@ urlpatterns = [
     path('reservation/', include('unlock2023.urls')),
     path('reservation/', include('rest_framework.urls')),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
