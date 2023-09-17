@@ -284,6 +284,7 @@ class UserTypeView(APIView):
 
 class CounselorView(APIView):
     def get(self, request):
+        print('token = '+request.header.get('Authorization'))
         token = request.headers.get('Authorization').split(' ')[1]
         print(token)
         if not token:
