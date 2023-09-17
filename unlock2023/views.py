@@ -15,6 +15,27 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 ALGORITHM = os.environ.get('ALGORITHM')
 
 
+class ReservationAllListView(APIView):
+    def get(self, request):
+        token = request.headers.get('Authorization').split(' ')[1]
+        if not token:
+            return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
+        payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
+        user_id = payload.get('user_id')
+
+        topic = request.GET.get('topic')
+        print(topic)
+        if Counselee.objects.filter(userkey=user_id).exists():
+            counselee = Counselee.objects.get(userkey=user_id)
+            reservations = Reservation.objects.filter(type=topic, counselee_id=counselee)
+            serializer = ReservationSerializer(reservations, many=True)
+            print(serializer.data)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
 class ReservationListAPIView(APIView):
     authentication = [JWTAuthentication]
 
@@ -87,9 +108,6 @@ def reservation(s_id):
     except Reservation.DoesNotExist:
         return Response({"msg": "해당 예약 정보 없음"}, status=status.HTTP_404_NOT_FOUND)
     return reservation
-
-
-
 
 
 # 포스팅 내용, 수정, 삭제

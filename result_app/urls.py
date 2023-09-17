@@ -9,6 +9,7 @@ urlpatterns = [
     path('result/pres/', PrescriptionListView.as_view()),
     path('result/pres/detail/', PrescriptionDetail.as_view()),
     path('video/', VideoView.as_view()),
+    path('csv_file/', CSVFileDownloadView.as_view()),
 ]
 
 

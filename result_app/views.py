@@ -1,4 +1,6 @@
+import csv
 import json
+from io import StringIO
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -15,7 +17,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import jwt
 from rest_framework import status, generics
-
+import boto3
 import os
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -72,13 +74,14 @@ class ResultListView(APIView):
             return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
         payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
         user_id = payload.get('user_id')
+        print(user_id)
         
         if Counselor.objects.filter(userkey=user_id).exists():
             counselor_id = Counselor.objects.get(userkey=user_id)
             print("counselor_id = ", counselor_id)
             try:
-                print("counselee_id = ", request.GET.get('id'))
-                results = Result.objects.filter(counselor_id=counselor_id.id, counselee_id=request.GET.get('id')).all()
+                #print("counselee_id = ", request.GET.get('id'))
+                results = Result.objects.filter(counselor_id=counselor_id.id).all() #, counselee_id=request.GET.get('id')
                 serializer = ResultSerializer(results, many=True)
                 return Response(serializer.data)
             except:
@@ -262,6 +265,32 @@ class VideoView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
+class CSVFileDownloadView(APIView):
+    def get(self, request):
+        aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+        aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+        s3_bucket_name = os.environ.get('AWS_RESULT_STORAGE_BUCKET_NAME')
 
+        # AWS S3 클라이언트 초기화
+        s3 = boto3.client('s3', aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
 
+        # S3에서 CSV 파일 다운로드
+        s3_object_key = 'emotion_mean/c2_r18_emotion_mean.csv'
+        response = s3.get_object(Bucket=s3_bucket_name, Key=s3_object_key)
+        csv_file = response['Body'].read().decode('utf-8')
 
+        csv_reader = csv.DictReader(StringIO(csv_file))
+
+        new_csvfile = None
+        for row in csv_reader:
+            new_csvfile = CSVFile.objects.create(
+                emotion1=row['Happymean'],
+                emotion2=row['Surprisemean'],
+                emotion3=row['Expressionlessmean'],
+                emotion4=row['Fearmean'],
+                emotion5=row['Aversionmean'],
+                emotion6=row['Angrymean'],
+                emotion7=row['Sadmean'],
+            )
+        serializer = CSVFileSerializer(new_csvfile)
+        return Response(serializer.data, status=status.HTTP_200_OK)

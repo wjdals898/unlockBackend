@@ -13,6 +13,7 @@ class ResultSerializer(serializers.ModelSerializer):
             'date',
             'analysis_url',
             'video',
+            # 'result_csv',
         ]
 
 
@@ -23,3 +24,8 @@ class PrescriptionSerializer(serializers.ModelSerializer):
         model = Prescription
         fields = "__all__"
 
+
+class CSVFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CSVFile
+        fields = "__all__"

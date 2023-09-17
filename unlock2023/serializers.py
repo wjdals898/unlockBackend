@@ -23,4 +23,4 @@ class ReservationSerializer(serializers.ModelSerializer):
         return CounselingType.type
     class Meta:
         model = Reservation
-        fields = ['counselor_id', 'counselee_id', 'counselor_name', 'counselee_name', 'date', 'time', 'type', 'type_name']
+        fields = ['id', 'counselor_id', 'counselee_id', 'counselor_name', 'counselee_name', 'date', 'time', 'type', 'type_name']
