@@ -217,10 +217,15 @@ class AuthAPIView(APIView):
             user = User.objects.get(id=user_id)
             print(user)
             user_type = ""
+            c_id = ""
             if Counselor.objects.filter(userkey_id=user_id): # 상담사
+                counselor = Counselor.objects.get(userkey=user_id)
                 user_type = "counselor"
+                c_id = counselor.id
             elif Counselee.objects.filter(userkey_id=user_id): # 내담자
+                counselee = Counselee.objects.get(userkey=user_id)
                 user_type = "counselee"
+                c_id = counselee.id
             else:
                 return Response({'msg': '회원 유형 없음'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -228,6 +233,7 @@ class AuthAPIView(APIView):
             serializer = UserSerializer(instance=user)
             print(serializer.data)
             data = {
+                'id': c_id,
                 'social_id': serializer.data['social_id'],
                 'email': serializer.data['email'],
                 'name': serializer.data['name'],
@@ -328,6 +334,7 @@ class CounseleeView(APIView):
             counselee = Counselee.objects.get(userkey_id=user.id)
             serializer = CounseleeSerializer(counselee)
             data = {
+                'id': serializer.data['id'],
                 'email': serializer.data['userkey']['email'],
                 'name': serializer.data['userkey']['name'],
                 'gender': serializer.data['userkey']['gender'],
