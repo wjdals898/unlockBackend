@@ -13,7 +13,7 @@ class ResultSerializer(serializers.ModelSerializer):
             'date',
             'analysis_url',
             'video',
-            # 'result_csv',
+            #'result_csv',
         ]
 
 
