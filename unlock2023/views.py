@@ -23,16 +23,23 @@ class ReservationAllListView(APIView):
         payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
         user_id = payload.get('user_id')
 
-        topic = request.GET.get('topic')
-        print(topic)
-        if Counselee.objects.filter(userkey=user_id).exists():
+        if Counselee.objects.filter(userkey=user_id).exists():  # 내담자 계정일 경우
+            topic = request.GET.get('topic')
+            print(topic)
             counselee = Counselee.objects.get(userkey=user_id)
             reservations = Reservation.objects.filter(type=topic, counselee_id=counselee)
             serializer = ReservationSerializer(reservations, many=True)
             print(serializer.data)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
+        elif Counselor.objects.filter(userkey=user_id).exists():  # 상담사 계정일 경우
+            counselor = Counselor.objects.get(userkey=user_id)
+            reservations = Reservation.objects.filter(counselor_id=counselor)
+            serializer = ReservationSerializer(reservations, many=True)
+            print(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        else:  # 둘 다 아닐 경우 예외 처리
             return Response({}, status=status.HTTP_204_NO_CONTENT)
 
 

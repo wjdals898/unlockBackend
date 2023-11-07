@@ -19,6 +19,7 @@ import jwt
 from rest_framework import status, generics
 import boto3
 import os
+from django.http import HttpResponse
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 ALGORITHM = os.environ.get('ALGORITHM')
@@ -54,7 +55,7 @@ class CounseleeListView(APIView):
             n = 0
             for serial in serializer.data:
                 cseInformation[n] = {"id":serial["id"]}
-                cseInformation[n]["userkey"] = {"id": serial["userkey"]["id"], "name": serial["userkey"]["name"],
+                cseInformation[n] = {"id":serial["id"], "name": serial["userkey"]["name"],
                                                 "email": serial["userkey"]["email"], "gender": serial["userkey"]["gender"],
                                                 "birth": serial["userkey"]["birth"]}
                 n += 1
@@ -294,3 +295,52 @@ class CSVFileDownloadView(APIView):
             )
         serializer = CSVFileSerializer(new_csvfile)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ResultFileDownloadView(APIView):
+    def post(self, request):
+        file_type = request.data.get('type') # 1은 emotion_mean / 2는 mind / 3은 행동
+        c_id = request.data.get('c_id')
+        print(c_id)
+        r_id = request.data.get('r_id')
+        print(r_id)
+        s3 = boto3.client('s3')
+        bucket_name = os.environ.get('AWS_RESULT_STORAGE_BUCKET_NAME')
+        file_key = ""
+        if file_type == 1:
+            print("평균 감정 다운")
+            file_key = f"emotion_mean/c{c_id}_r{r_id}_emotion_mean.csv"
+        elif file_type == 2:
+            print("마인드 다운")
+            file_key = f"mind/c{c_id}_r{r_id}_node_positions_with_emotion.csv"
+        elif file_type == 3:
+            print("행동 다운")
+            file_key = f"movement_result/c{c_id}_r{r_id}_movements_data.csv"
+        elif file_type == 4:
+            print("전체 감정 다운")
+            file_key = f"emotion_result/c{c_id}_r{r_id}_emotion_results.csv"
+        else:
+            file_key = ""
+
+        print("file_key ", file_key)
+
+        try:
+            print('bucket : ', bucket_name)
+            print('file_key : ', file_key)
+            response1 = s3.get_object(Bucket=bucket_name, Key=file_key)
+            print('response1 : ', response1)
+
+            # 파일 내용 읽기
+            csv_content = response1['Body'].read().decode('utf-8')
+            print(csv_content)
+
+            print("s3 다운하기")
+            http_response = HttpResponse(csv_content)
+            http_response['Content-Disposition'] = f'attachment; filename="c{c_id}_r{r_id}_result{file_type}.csv"'
+
+            print('http_response : ', http_response)
+
+            return http_response
+
+        except Exception as e:
+            return Response("Failed to download CSV file from S3: " + str(e), status=500)

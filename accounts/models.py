@@ -91,6 +91,9 @@ class User(AbstractBaseUser):
 class CounselingType(models.Model):
     type = models.CharField(max_length = 30)
 
+    def __str__(self):
+        return f"({self.id}) {self.type}"
+
 
 class Counselor(models.Model):
     id = models.AutoField(primary_key=True)
@@ -100,7 +103,13 @@ class Counselor(models.Model):
     credit = models.CharField(max_length=30)
     prof_field = models.ForeignKey(CounselingType, on_delete=models.CASCADE, db_column='prof_field')
 
+    def __str__(self):
+        return f"({self.id}) {self.userkey.name}"
+
 
 class Counselee(models.Model):
     id = models.AutoField(primary_key=True)
     userkey = models.ForeignKey(User, on_delete=models.CASCADE,  db_column="userkey", related_name="counselee_id")
+
+    def __str__(self):
+        return f"({self.id}) {self.userkey.name}"
