@@ -1,5 +1,6 @@
 import csv
 import json
+from django.http import HttpResponse
 from io import StringIO
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -54,7 +55,10 @@ class CounseleeListView(APIView):
             cseInformation = [0] * len(serializer.data)
             n = 0
             for serial in serializer.data:
+<<<<<<< HEAD
                 cseInformation[n] = {"id":serial["id"]}
+=======
+>>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
                 cseInformation[n] = {"id":serial["id"], "name": serial["userkey"]["name"],
                                                 "email": serial["userkey"]["email"], "gender": serial["userkey"]["gender"],
                                                 "birth": serial["userkey"]["birth"]}
@@ -325,8 +329,11 @@ class ResultFileDownloadView(APIView):
         print("file_key ", file_key)
 
         try:
+<<<<<<< HEAD
             print('bucket : ', bucket_name)
             print('file_key : ', file_key)
+=======
+>>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
             response1 = s3.get_object(Bucket=bucket_name, Key=file_key)
             print('response1 : ', response1)
 
@@ -343,4 +350,8 @@ class ResultFileDownloadView(APIView):
             return http_response
 
         except Exception as e:
+<<<<<<< HEAD
             return Response("Failed to download CSV file from S3: " + str(e), status=500)
+=======
+            return Response("Failed to download CSV file from S3: " + str(e), status=500)
+>>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
