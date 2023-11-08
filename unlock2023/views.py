@@ -15,6 +15,43 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 ALGORITHM = os.environ.get('ALGORITHM')
 
 
+class ReservationAllListView(APIView):
+    def get(self, request):
+        token = request.headers.get('Authorization').split(' ')[1]
+        if not token:
+            return Response({"err_msg": "토큰 없음"}, status=status.HTTP_200_OK)
+        payload = jwt.decode(str(token), SECRET_KEY, ALGORITHM)
+        user_id = payload.get('user_id')
+
+        if Counselee.objects.filter(userkey=user_id).exists():  # 내담자 계정일 경우
+            topic = request.GET.get('topic')
+            print(topic)
+            counselee = Counselee.objects.get(userkey=user_id)
+            reservations = Reservation.objects.filter(type=topic, counselee_id=counselee)
+            serializer = ReservationSerializer(reservations, many=True)
+            print(serializer.data)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+<<<<<<< HEAD
+        elif Counselor.objects.filter(userkey=user_id).exists():  # 상담사 계정일 경우
+=======
+
+        elif Counselor.objects.filter(userkey=user_id).exists():    # 상담사 계정일 경우
+>>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
+            counselor = Counselor.objects.get(userkey=user_id)
+            reservations = Reservation.objects.filter(counselor_id=counselor)
+            serializer = ReservationSerializer(reservations, many=True)
+            print(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+<<<<<<< HEAD
+        else:  # 둘 다 아닐 경우 예외 처리
+=======
+        else:   # 둘 다 아닐 경우 예외 처리
+>>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
+            return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
 class ReservationListAPIView(APIView):
     authentication = [JWTAuthentication]
 
@@ -89,9 +126,6 @@ def reservation(s_id):
     return reservation
 
 
-
-
-
 # 포스팅 내용, 수정, 삭제
 class ReservationEditAPIView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -116,8 +150,8 @@ class Counselor_listAPIView(APIView):
 
     #상담사 리스트 가져오기
     def get(self, request):
-        list = Counselor_list.objects.all()
-        serializer = CounselorlistSerializer(list, many=True)
+        list = Counselor.objects.all()
+        serializer = CounselorSerializer(list, many=True)
         print(serializer)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -134,6 +168,8 @@ class Counselor_listAPIView(APIView):
         print(payload)
 
         if Counselor.objects.filter(userkey_id=user_id).exists():
+            return Response({"msg": "상담자로 등록할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
             user = User.objects.get(id=user_id)
             print(user)
             user_table_id = user.id
@@ -144,8 +180,8 @@ class Counselor_listAPIView(APIView):
             counselorlist_name = user.name
             print(counselorlist_name)
             prof = CounselingType.objects.get(type=data.get('prof_field'))
-            n_l = Counselor_list.objects.create(
-                c_id=counselor,
+            n_l = Counselor.objects.create(
+                userkey=user,
                 institution_name=data.get('institution_name'),
                 institution_address=data.get('institution_address'),
                 credit=data.get('credit'),
@@ -154,4 +190,3 @@ class Counselor_listAPIView(APIView):
             serializer = ReservationSerializer(n_l)
             print(serializer)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({"msg": "상담자로 등록할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)

@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(User)
 admin.site.register(Counselor)
 admin.site.register(Counselee)
+admin.site.register(CounselingType)

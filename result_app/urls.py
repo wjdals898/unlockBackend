@@ -7,8 +7,14 @@ urlpatterns = [
     path('counselee/', CounseleeListView.as_view()),
     path('result/', ResultListView.as_view()),
     path('result/pres/', PrescriptionListView.as_view()),
-    path('result/pres/detail/', PrescriptionDetail.as_view())
-
+    path('result/pres/detail/', PrescriptionDetail.as_view()),
+    path('video/', VideoView.as_view()),
+<<<<<<< HEAD
+    # path('csv_file/', CSVFileDownloadView.as_view()),
+=======
+    #path('csv_file/', CSVFileDownloadView.as_view()),
+>>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
+    path('result_file_download/', ResultFileDownloadView.as_view()),
 ]
 
 
