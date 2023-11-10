@@ -146,12 +146,12 @@ class PrescriptionListView(APIView):
     # 결과에 해당하는 처방전
     def get(self, request):
         try:
-            pres = Prescription.objects.get(result=request.data['id'])
+            pres = Prescription.objects.get(result=request.GET.get('id'))
             serializer = PrescriptionSerializer(pres)
             return Response(serializer.data)
 
         except:
-            return Response({'msg': '처방전이 존재하지 않습니다.'})
+            return Response({'msg': '처방전이 존재하지 않습니다.'}, status=status.HTTP_204_NO_CONTENT)
 
     # 처방전 추가
     def post(self, request):
