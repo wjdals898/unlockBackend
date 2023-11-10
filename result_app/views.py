@@ -20,6 +20,7 @@ import jwt
 from rest_framework import status, generics
 import boto3
 import os
+from django.http import HttpResponse
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 ALGORITHM = os.environ.get('ALGORITHM')

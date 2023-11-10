@@ -218,11 +218,19 @@ class AuthAPIView(APIView):
             print(user)
             user_type = ""
             c_id = ""
+<<<<<<< HEAD
+            if Counselor.objects.filter(userkey_id=user_id):  # 상담사
+                counselor = Counselor.objects.get(userkey=user_id)
+                user_type = "counselor"
+                c_id = counselor.id
+            elif Counselee.objects.filter(userkey_id=user_id):  # 내담자
+=======
             if Counselor.objects.filter(userkey_id=user_id): # 상담사
                 counselor = Counselor.objects.get(userkey=user_id)
                 user_type = "counselor"
                 c_id = counselor.id
             elif Counselee.objects.filter(userkey_id=user_id): # 내담자
+>>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
                 counselee = Counselee.objects.get(userkey=user_id)
                 user_type = "counselee"
                 c_id = counselee.id

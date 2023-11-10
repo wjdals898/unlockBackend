@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (unlockBackend)" project-jdk-type="Python SDK" />
+=======
   <component name="Black">
     <option name="sdkName" value="Python 3.9 (unlockBackend)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (unlockBackend)" project-jdk-type="Python SDK" />
+>>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
   <component name="PyCharmProfessionalAdvertiser">
     <option name="shown" value="true" />
   </component>
