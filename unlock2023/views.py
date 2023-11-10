@@ -32,23 +32,15 @@ class ReservationAllListView(APIView):
             print(serializer.data)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
-<<<<<<< HEAD
-        elif Counselor.objects.filter(userkey=user_id).exists():  # 상담사 계정일 경우
-=======
 
-        elif Counselor.objects.filter(userkey=user_id).exists():    # 상담사 계정일 경우
->>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
+        elif Counselor.objects.filter(userkey=user_id).exists():  # 상담사 계정일 경우
             counselor = Counselor.objects.get(userkey=user_id)
             reservations = Reservation.objects.filter(counselor_id=counselor)
             serializer = ReservationSerializer(reservations, many=True)
             print(serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-<<<<<<< HEAD
         else:  # 둘 다 아닐 경우 예외 처리
-=======
-        else:   # 둘 다 아닐 경우 예외 처리
->>>>>>> 89f2385039a400d5b3448599e72d1adb73930e9c
             return Response({}, status=status.HTTP_204_NO_CONTENT)
 
 
